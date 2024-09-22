@@ -1,5 +1,8 @@
+build
+runs
 */build
 */*/build
 */*.wts
 */*.ppm
 *idea*
+yolov8/yolo_models

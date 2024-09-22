@@ -210,9 +210,12 @@ int main(int argc, char** argv) {
     float* decode_ptr_device = nullptr;
 
     // Read images from directory
-    std::vector<std::string> file_names;
-    if (read_files_in_dir(img_dir.c_str(), file_names) < 0) {
-        std::cerr << "read_files_in_dir failed." << std::endl;
+    cv::VideoCapture cap;
+    cv::Mat frame;
+    cap.open(0, cv::CAP_V4L2);
+    cap.set(cv::CAP_PROP_FOURCC, cv::VideoWriter::fourcc('M', 'J', 'P', 'G'));
+    if (!cap.isOpened()) {
+        std::cerr << "ERROR! Unable to open camera\n";
         return -1;
     }
 
@@ -220,15 +223,15 @@ int main(int argc, char** argv) {
                    &decode_ptr_device, cuda_post_process);
 
     // batch predict
-    for (size_t i = 0; i < file_names.size(); i += kBatchSize) {
+    while (true) {
+        cap >> frame;
         // Get a batch of images
         std::vector<cv::Mat> img_batch;
         std::vector<std::string> img_name_batch;
-        for (size_t j = i; j < i + kBatchSize && j < file_names.size(); j++) {
-            cv::Mat img = cv::imread(img_dir + "/" + file_names[j]);
-            img_batch.push_back(img);
-            img_name_batch.push_back(file_names[j]);
-        }
+
+        img_batch.push_back(frame);
+        // img_name_batch.push_back(file_names[j]);
+        
         // Preprocess
         cuda_batch_preprocess(img_batch, device_buffers[0], kInputW, kInputH, stream);
         // Run inference
@@ -245,9 +248,9 @@ int main(int argc, char** argv) {
         // Draw bounding boxes
         draw_bbox(img_batch, res_batch);
         // Save images
-        for (size_t j = 0; j < img_batch.size(); j++) {
-            cv::imwrite("_" + img_name_batch[j], img_batch[j]);
-        }
+        // for (size_t j = 0; j < img_batch.size(); j++) {
+        //     cv::imwrite("_" + img_name_batch[j], img_batch[j]);
+        // }
     }
 
     // Release stream and buffers

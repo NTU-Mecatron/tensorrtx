@@ -7,8 +7,23 @@ add_definitions(-DAPI_EXPORTS)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_BUILD_TYPE Debug)
 
-set(CMAKE_CUDA_COMPILER /usr/local/cuda/bin/nvcc)
+# Suppress warnings
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -w")
+set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -w")
+
+set(CMAKE_CUDA_COMPILER /usr/local/cuda-12.1/bin/nvcc)
 enable_language(CUDA)
+
+# Use ccache for C++ and CUDA compilers
+find_program(CCACHE_PROGRAM ccache)
+if(CCACHE_PROGRAM)
+    set(CMAKE_CXX_COMPILER_LAUNCHER ${CCACHE_PROGRAM})
+    set(CMAKE_CUDA_COMPILER_LAUNCHER ${CCACHE_PROGRAM})
+endif()
+
+# Include CUDA directories
+include_directories(/usr/local/cuda-12.1/include)
+link_directories(/usr/local/cuda-12.1/lib64)
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
 include_directories(${PROJECT_SOURCE_DIR}/plugin)
@@ -25,11 +40,8 @@ else()
   link_directories(/usr/local/cuda/lib64)
 
   # tensorrt
-  include_directories(/home/lindsay/TensorRT-8.4.1.5/include)
-  link_directories(/home/lindsay/TensorRT-8.4.1.5/lib)
-  #  include_directories(/home/lindsay/TensorRT-7.2.3.4/include)
-  #  link_directories(/home/lindsay/TensorRT-7.2.3.4/lib)
-
+  include_directories(/usr/include/x86_64-linux-gnu/)
+  link_directories(/usr/lib/x86_64-linux-gnu/)
 
 endif()
 
@@ -48,12 +60,12 @@ target_link_libraries(yolov8_det cudart)
 target_link_libraries(yolov8_det myplugins)
 target_link_libraries(yolov8_det ${OpenCV_LIBS})
 
-add_executable(yolov8_seg ${PROJECT_SOURCE_DIR}/yolov8_seg.cpp ${SRCS})
-target_link_libraries(yolov8_seg nvinfer cudart myplugins ${OpenCV_LIBS})
+# add_executable(yolov8_seg ${PROJECT_SOURCE_DIR}/yolov8_seg.cpp ${SRCS})
+# target_link_libraries(yolov8_seg nvinfer cudart myplugins ${OpenCV_LIBS})
 
 
-add_executable(yolov8_pose ${PROJECT_SOURCE_DIR}/yolov8_pose.cpp ${SRCS})
-target_link_libraries(yolov8_pose nvinfer cudart myplugins ${OpenCV_LIBS})
+# add_executable(yolov8_pose ${PROJECT_SOURCE_DIR}/yolov8_pose.cpp ${SRCS})
+# target_link_libraries(yolov8_pose nvinfer cudart myplugins ${OpenCV_LIBS})
 
-add_executable(yolov8_cls ${PROJECT_SOURCE_DIR}/yolov8_cls.cpp ${SRCS})
-target_link_libraries(yolov8_cls nvinfer cudart myplugins ${OpenCV_LIBS})
+# add_executable(yolov8_cls ${PROJECT_SOURCE_DIR}/yolov8_cls.cpp ${SRCS})
+# target_link_libraries(yolov8_cls nvinfer cudart myplugins ${OpenCV_LIBS})

@@ -165,6 +165,8 @@ void draw_bbox(std::vector<cv::Mat>& img_batch, std::vector<std::vector<Detectio
             cv::putText(img, std::to_string((int)res[j].class_id), cv::Point(r.x, r.y - 1), cv::FONT_HERSHEY_PLAIN, 1.2,
                         cv::Scalar(0xFF, 0xFF, 0xFF), 2);
         }
+        cv::imshow("result", img);
+        cv::waitKey(5);
     }
 }
 
